@@ -15,7 +15,7 @@ EXPOSE 11434
 RUN apt-get update && apt-get install -y socat
 RUN socat TCP-LISTEN:8080,fork,reuseaddr TCP:localhost:11434 &
 
-ENV OLLAMA_HOST 127.0.0.1:8080
+ENV OLLAMA_HOST 0.0.0.0:8080
 
 ENTRYPOINT ["/bin/ollama"]
 # Port forwarding from 8080 to 11434 and run /bin/ollama serve
