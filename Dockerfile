@@ -1,29 +1,13 @@
-FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
+# Dockerfile for ollama service
+FROM ollama/ollama:latest
 
-ARG TARGETARCH
-ARG GOFLAGS="'-ldflags=-w -s'"
+# Set the container name
+ENV container_name ollama_backend
 
-WORKDIR /go/src/github.com/jmorganca/ollama
-RUN apt-get update && apt-get install -y git build-essential cmake
-ADD https://dl.google.com/go/go1.21.3.linux-$TARGETARCH.tar.gz /tmp/go1.21.3.tar.gz
-RUN mkdir -p /usr/local && tar xz -C /usr/local </tmp/go1.21.3.tar.gz
+# Set the volume for ollama
+VOLUME /root/.ollama
 
-COPY . .
-ENV GOARCH=$TARGETARCH
-ENV GOFLAGS=$GOFLAGS
-RUN /usr/local/go/bin/go generate ./... \
-    && /usr/local/go/bin/go build .
-
-FROM ubuntu:22.04
-RUN apt-get update && apt-get install -y ca-certificates
-COPY --from=0 /go/src/github.com/jmorganca/ollama/ollama /bin/ollama
+# Expose port 11434
 EXPOSE 11434
-ENV OLLAMA_HOST 0.0.0.0
-
-# set some environment variable for better NVIDIA compatibility
-ENV PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
-ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
-
 ENTRYPOINT ["/bin/ollama"]
 CMD ["serve"]
